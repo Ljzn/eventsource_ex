@@ -23,7 +23,7 @@ defmodule EventsourceEx do
 
     {url, headers, parent, Enum.filter(http_options, fn({_,val}) -> val != nil end)}
   end
-    
+
   def init(opts \\ []) do
     {url, headers, parent, options} = parse_options(opts)
     Logger.debug(fn -> "starting stream with http options: #{inspect options}" end)
@@ -48,7 +48,7 @@ defmodule EventsourceEx do
   end
 
   def handle_info(%HTTPoison.AsyncEnd{}, state) do
-    {:stop, :connection_terminated, state}
+    {:stop, :shutdown, state}
   end
 
   def handle_info(_msg, state) do
@@ -88,7 +88,7 @@ defmodule EventsourceEx do
   defp dispatch(parent, message) do
     message = Map.put(message, :data, message.data |> String.replace_suffix("\n", "")) # Remove single trailing \n from message.data if necessary
     |> Map.put(:dispatch_ts, DateTime.utc_now) # Add dispatch timestamp
-   
+
     send(parent, message)
   end
 end
